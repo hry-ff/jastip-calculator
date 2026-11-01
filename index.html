@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +24,7 @@
                     <label class="block text-xs text-emerald-200">Exchange Rate (1 KRW)</label>
                     <div class="font-semibold flex items-center gap-1">
                         <span>Rp</span>
-                        <input type="number" id="exchangeRateInput" value="13.6" step="0.1" class="w-16 bg-emerald-900/60 border border-emerald-500 rounded px-1.5 py-0.5 text-white font-bold text-center focus:outline-none">
+                        <input type="number" id="exchangeRateInput" value="13.59" step="0.01" class="w-20 bg-emerald-900/60 border border-emerald-500 rounded px-1.5 py-0.5 text-white font-bold text-center focus:outline-none">
                     </div>
                 </div>
             </div>
@@ -51,7 +52,7 @@
 
         <!-- Action Buttons -->
         <div class="flex gap-3">
-            <button onclick="addItem()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-3 px-4 rounded-xl border border-slate-300 transition flex items-center justify-center gap-2">
+            <button onclick="addItem()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-3 px-4 rounded-xl border border-slate-300 transition flex items-center justify-center gap-2 cursor-pointer">
                 <i class="fa-solid fa-plus text-emerald-600"></i> Add Another Item
             </button>
         </div>
@@ -69,7 +70,7 @@
                 </div>
                 <div class="flex justify-between text-slate-600">
                     <span>Customer Base Fee</span>
-                    <span id="summaryBaseFee" class="font-semibold">Rp 30,000</span>
+                    <span id="summaryBaseFee" class="font-semibold">Rp 20,000</span>
                 </div>
                 <div class="border-t border-slate-200 pt-3 flex justify-between items-center">
                     <span class="text-base font-bold text-slate-800">Grand Total</span>
@@ -77,31 +78,68 @@
                 </div>
             </div>
 
-            <button onclick="copyWhatsAppQuote()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-base">
+            <button onclick="copyWhatsAppQuote()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-base cursor-pointer">
                 <i class="fa-brands fa-whatsapp text-xl"></i> Copy Customer Quote for WhatsApp
             </button>
         </div>
     </div>
 
+    <!-- Custom Modal for Notifications instead of alert() -->
+    <div id="notificationModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl space-y-4 text-center">
+            <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 id="modalTitle" class="font-bold text-lg text-slate-800">Success</h3>
+            <p id="modalMessage" class="text-sm text-slate-600"></p>
+            <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl transition cursor-pointer">OK</button>
+        </div>
+    </div>
+
     <script>
         // CONFIGURATION & DEFAULTS
-        let exchangeRate = 13.6;
+        let exchangeRate = 13.59;
         let customerBaseFee = 20000;
         let itemCount = 0;
 
-        const weightTiers = [
-            { maxWeight: 200, multiplier: 1.15, label: "0 - 200g (115%)" },
-            { maxWeight: 400, multiplier: 1.25, label: "201 - 400g (125%)" },
-            { maxWeight: 700, multiplier: 1.35, label: "401 - 700g (135%)" },
-            { maxWeight: 1000, multiplier: 1.45, label: "701g - 1kg (145%)" },
-            { maxWeight: Infinity, multiplier: 1.60, label: "> 1kg (160%)" }
+        // Volume Tiers configuration with respective multipliers
+        const volumeTiers = [
+            { id: 'A', multiplier: 1.0, label: "Tier A: Flat / Micro (1.0x)" },
+            { id: 'B', multiplier: 1.1, label: "Tier B: Small Accessories / Makeup (1.1x)" },
+            { id: 'C', multiplier: 1.125, label: "Tier C: Standard Skincare / Small Merch (1.125x)" },
+            { id: 'D', multiplier: 1.175, label: "Tier D: Albums / Bulky Sets (1.175x)" },
+            { id: 'E', multiplier: 1.25, label: "Tier E: Special Edition / Heavy / Fragile (1.25x)" }
         ];
 
-        function getTier(weightGrams) {
-            for (let tier of weightTiers) {
-                if (weightGrams <= tier.maxWeight) return tier;
+        function getVolumeTierObj(tierId) {
+            return volumeTiers.find(t => t.id === tierId) || volumeTiers[0];
+        }
+
+        // Sliding Scale Fee Calculation: 42.5% down to 20%
+        // Drops by 0.25% per 100 KRW increment between 1,000 KRW and 10,000 KRW
+        function calculateSlidingFeePercentage(krwPrice) {
+            if (krwPrice <= 1000) {
+                return 42.5;
+            } else if (krwPrice >= 10000) {
+                return 20.0;
+            } else {
+                // Difference from 1,000 KRW in steps of 100 KRW
+                const steps = (krwPrice - 1000) / 100;
+                const percentage = 42.5 - (steps * 0.25);
+                return Math.max(20.0, percentage);
             }
-            return weightTiers[weightTiers.length - 1];
+        }
+
+        function showModal(title, message) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            document.getElementById('notificationModal').classList.remove('hidden');
+            document.getElementById('notificationModal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('notificationModal').classList.remove('flex');
+            document.getElementById('notificationModal').classList.add('hidden');
         }
 
         function addItem() {
@@ -113,20 +151,26 @@
             card.id = `item-card-${id}`;
             card.className = "bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4 relative transition hover:shadow-md";
             
+            // Generate dropdown options for volume tiers
+            let tierOptionsHtml = '';
+            volumeTiers.forEach(t => {
+                tierOptionsHtml += `<option value="${t.id}">${t.label}</option>`;
+            });
+
             card.innerHTML = `
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                     <span class="font-bold text-slate-700 flex items-center gap-2">
                         <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center">${id}</span>
                         Item #${id}
                     </span>
-                    ${id > 1 ? `<button onclick="removeItem(${id})" class="text-xs text-rose-500 hover:text-rose-700 font-semibold flex items-center gap-1"><i class="fa-solid fa-trash"></i> Remove</button>` : ''}
+                    ${id > 1 || document.querySelectorAll('[id^="item-card-"]').length > 0 ? `<button onclick="removeItem(${id})" class="text-xs text-rose-500 hover:text-rose-700 font-semibold flex items-center gap-1 cursor-pointer"><i class="fa-solid fa-trash"></i> Remove</button>` : ''}
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Item Description / Name</label>
-                            <input type="text" id="desc-${id}" placeholder="e.g. Album / Shoes / Hoodie" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <input type="text" id="desc-${id}" placeholder="e.g. Toner / Lipstick / Album" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Price in Korean Won (KRW)</label>
@@ -137,26 +181,23 @@
                         </div>
                     </div>
 
-                    <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col justify-center">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Actual Weight (grams)</label>
-                            <input type="number" id="weight-${id}" oninput="calculateOrder()" placeholder="e.g. 350" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Volume Category (Tier A - E)</label>
+                            <select id="tier-${id}" onchange="calculateOrder()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                ${tierOptionsHtml}
+                            </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">Dimensions (Length x Width x Height cm)</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <input type="number" id="length-${id}" oninput="calculateOrder()" placeholder="L" class="border border-slate-300 rounded-lg px-2 py-1 text-xs text-center focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                <input type="number" id="width-${id}" oninput="calculateOrder()" placeholder="W" class="border border-slate-300 rounded-lg px-2 py-1 text-xs text-center focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                <input type="number" id="height-${id}" oninput="calculateOrder()" placeholder="H" class="border border-slate-300 rounded-lg px-2 py-1 text-xs text-center focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            </div>
+                        <div class="text-xs text-slate-500 mt-1">
+                            <span id="tierInfo-${id}">Select tier to view multiplier & fee breakdown</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-emerald-50/60 rounded-xl p-3 border border-emerald-100 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div class="space-y-0.5">
-                        <span id="badge-${id}" class="inline-block bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded font-bold">Tier: -</span>
-                        <p id="billableText-${id}" class="text-slate-500">Billable Weight: 0g</p>
+                        <span id="badge-${id}" class="inline-block bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded font-bold">Fee %: -</span>
+                        <p id="feeKrwText-${id}" class="text-slate-500">Jastip Fee: ₩0</p>
                     </div>
                     <div class="text-right">
                         <span class="text-slate-500 block">Item Total (IDR)</span>
@@ -176,7 +217,7 @@
         }
 
         function calculateOrder() {
-            exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 13.5;
+            exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 13.59;
             customerBaseFee = parseFloat(document.getElementById('baseFeeInput').value) || 0;
 
             let itemsGrandTotal = 0;
@@ -185,20 +226,29 @@
             itemCards.forEach(card => {
                 const id = card.id.replace('item-card-', '');
                 const krw = parseFloat(document.getElementById(`krw-${id}`).value) || 0;
-                const weight = parseFloat(document.getElementById(`weight-${id}`).value) || 0;
-                const l = parseFloat(document.getElementById(`length-${id}`).value) || 0;
-                const w = parseFloat(document.getElementById(`width-${id}`).value) || 0;
-                const h = parseFloat(document.getElementById(`height-${id}`).value) || 0;
+                const tierId = document.getElementById(`tier-${id}`).value;
+                const tierObj = getVolumeTierObj(tierId);
 
-                const volWeight = (l * w * h / 5000) * 1000;
-                const billableWeight = Math.max(weight, volWeight);
-                const tier = getTier(billableWeight);
-
-                const itemTotalIDR = Math.round(krw * tier.multiplier * exchangeRate);
+                // Calculate sliding percentage based on price
+                const feePercentage = calculateSlidingFeePercentage(krw);
+                
+                // Base fee amount in KRW = Price * (Fee % / 100)
+                const baseFeeKRW = krw * (feePercentage / 100);
+                
+                // Final jastip fee in KRW = Base fee * Volume Tier Multiplier
+                const finalFeeKRW = baseFeeKRW * tierObj.multiplier;
+                
+                // Total item price in KRW = Item Price + Final Jastip Fee
+                const totalItemKRW = krw + finalFeeKRW;
+                
+                // Convert to IDR
+                const itemTotalIDR = Math.round(totalItemKRW * exchangeRate);
                 itemsGrandTotal += itemTotalIDR;
 
-                document.getElementById(`badge-${id}`).innerText = `${tier.label}`;
-                document.getElementById(`billableText-${id}`).innerText = `Billable Weight: ${Math.round(billableWeight)}g (${volWeight > weight ? 'Volumetric' : 'Actual'})`;
+                // Update UI badge & info
+                document.getElementById(`badge-${id}`).innerText = `Fee Rate: ${feePercentage.toFixed(2)}%`;
+                document.getElementById(`tierInfo-${id}`).innerText = `Multiplier: ${tierObj.multiplier}x applied to fee`;
+                document.getElementById(`feeKrwText-${id}`).innerText = `Jastip Fee: ₩${Math.round(finalFeeKRW).toLocaleString('en-US')} (${tierObj.id} tier)`;
                 document.getElementById(`itemTotal-${id}`).innerText = `Rp ${itemTotalIDR.toLocaleString('id-ID')}`;
             });
 
@@ -212,37 +262,39 @@
             const itemCards = document.querySelectorAll('[id^="item-card-"]');
             let itemsText = "";
             let grandTotal = customerBaseFee;
+            let itemsGrandTotal = 0;
 
             itemCards.forEach((card, index) => {
                 const id = card.id.replace('item-card-', '');
                 const desc = document.getElementById(`desc-${id}`).value || `Item ${index + 1}`;
                 const krw = parseFloat(document.getElementById(`krw-${id}`).value) || 0;
-                const weight = parseFloat(document.getElementById(`weight-${id}`).value) || 0;
-                const l = parseFloat(document.getElementById(`length-${id}`).value) || 0;
-                const w = parseFloat(document.getElementById(`width-${id}`).value) || 0;
-                const h = parseFloat(document.getElementById(`height-${id}`).value) || 0;
+                const tierId = document.getElementById(`tier-${id}`).value;
+                const tierObj = getVolumeTierObj(tierId);
 
-                const volWeight = (l * w * h / 5000) * 1000;
-                const billableWeight = Math.max(weight, volWeight);
-                const tier = getTier(billableWeight);
-                const total = Math.round(krw * tier.multiplier * exchangeRate);
-                grandTotal += total;
+                const feePercentage = calculateSlidingFeePercentage(krw);
+                const baseFeeKRW = krw * (feePercentage / 100);
+                const finalFeeKRW = baseFeeKRW * tierObj.multiplier;
+                const totalItemKRW = krw + finalFeeKRW;
+                const totalIDR = Math.round(totalItemKRW * exchangeRate);
+                itemsGrandTotal += totalIDR;
+                grandTotal = itemsGrandTotal + customerBaseFee;
 
-                itemsText += `${index + 1}. *${desc}*\n   • Base Price: ₩${krw.toLocaleString('en-US')}\n   • Billable Weight: ${Math.round(billableWeight)}g (${tier.label.split(' ')[2]})\n   • Item Price: Rp ${total.toLocaleString('id-ID')}\n\n`;
+                itemsText += `${index + 1}. *${desc}*\n   • Price: ₩${krw.toLocaleString('en-US')}\n   • Volume Tier: ${tierObj.id} (${tierObj.multiplier}x)\n   • Total Price: Rp ${totalIDR.toLocaleString('id-ID')}\n\n`;
             });
 
-            const quote = `🛍️ *JASTIP KOREA QUOTATION*\n-----------------------------------\n${itemsText}📌 *Customer Base Fee:* Rp ${customerBaseFee.toLocaleString('id-ID')}\n-----------------------------------\n💰 *TOTAL ESTIMATE:* Rp ${grandTotal.toLocaleString('id-ID')}\n\n_Note: Prices are calculated based on item weight/volume brackets._`;
+            const quote = `🛍️ *JASTIP KOREA QUOTATION*\n-----------------------------------\n${itemsText}📌 *Customer Base Fee:* Rp ${customerBaseFee.toLocaleString('id-ID')}\n-----------------------------------\n💰 *GRAND TOTAL:* Rp ${grandTotal.toLocaleString('id-ID')}\n\n_Note: Calculated with sliding-scale fee & volume multipliers._`;
 
             navigator.clipboard.writeText(quote).then(() => {
-                alert("WhatsApp quote copied to clipboard!");
+                showModal("Copied!", "WhatsApp quote copied to clipboard successfully!");
             });
         }
 
         document.getElementById('exchangeRateInput').addEventListener('input', calculateOrder);
         document.getElementById('baseFeeInput').addEventListener('input', calculateOrder);
 
-        // Add first item by default
+        // Add first item by default on load
         addItem();
     </script>
 </body>
 </html>
+```
