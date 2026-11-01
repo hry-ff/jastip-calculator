@@ -1,145 +1,234 @@
-```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jastip Apip 🍁</title>
+    <title>Jastip Apip 🍁 Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8">
 
     <div class="max-w-4xl mx-auto space-y-6">
-        <!-- Header -->
-        <header class="bg-emerald-700 text-white rounded-2xl p-6 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h1 class="text-2xl font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-calculator"></i> Jastip Apip 🍁
-                </h1>
-                <p class="text-emerald-100 text-sm mt-1">South Korea (KRW) to Indonesia (IDR)</p>
-            </div>
-            <div class="bg-emerald-800/80 backdrop-blur rounded-xl p-3 border border-emerald-600/50 flex items-center gap-3 text-sm">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex bg-white rounded-2xl p-1.5 shadow-sm border border-slate-200 gap-2">
+            <button onclick="switchTab('calculator')" id="tab-calculator" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 bg-emerald-700 text-white shadow-sm">
+                <i class="fa-solid fa-calculator"></i> Price Calculator
+            </button>
+            <button onclick="switchTab('guide')" id="tab-guide" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:bg-slate-50">
+                <i class="fa-solid fa-book-open"></i> Guide & Rules
+            </button>
+        </div>
+
+        <!-- ================= CALCULATOR VIEW ================= -->
+        <div id="view-calculator" class="space-y-6">
+            <!-- Header -->
+            <header class="bg-emerald-700 text-white rounded-2xl p-6 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <label class="block text-xs text-emerald-200">Exchange Rate (1 KRW)</label>
-                    <div class="font-semibold flex items-center gap-1">
-                        <span>Rp</span>
-                        <input type="number" id="exchangeRateInput" value="13.59" step="0.01" class="w-20 bg-emerald-900/60 border border-emerald-500 rounded px-1.5 py-0.5 text-white font-bold text-center focus:outline-none">
+                    <h1 class="text-2xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> Jastip Apip 🍁
+                    </h1>
+                    <p class="text-emerald-100 text-sm mt-1">South Korea (KRW) to Indonesia (IDR)</p>
+                </div>
+                <div class="bg-emerald-800/80 backdrop-blur rounded-xl p-3 border border-emerald-600/50 flex items-center gap-3 text-sm">
+                    <div>
+                        <label class="block text-xs text-emerald-200">Exchange Rate (1 KRW)</label>
+                        <div class="font-semibold flex items-center gap-1">
+                            <span>Rp</span>
+                            <input type="number" id="exchangeRateInput" value="13.6" step="0.1" class="w-16 bg-emerald-900/60 border border-emerald-500 rounded px-1.5 py-0.5 text-white font-bold text-center focus:outline-none">
+                        </div>
                     </div>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <!-- Base Fee Card -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg">
-                    <i class="fa-solid fa-receipt"></i>
+            <!-- Base Fee Card -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-800">Total Customer Base Fee</h3>
+                        <p class="text-xs text-slate-500">Rp 20.000 (Manual TF) + Rp 15.000 (Shopee/SPX)</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="font-semibold text-slate-800">Customer Base Fee</h3>
-                    <p class="text-xs text-slate-500">Flat service fee applied once per customer order</p>
+                <div class="flex items-center gap-2 font-medium">
+                    <span class="text-slate-500">Rp</span>
+                    <input type="number" id="baseFeeInput" value="35000" step="1000" class="w-28 border border-slate-300 rounded-lg px-3 py-1.5 text-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
             </div>
-            <div class="flex items-center gap-2 font-medium">
-                <span class="text-slate-500">Rp</span>
-                <input type="number" id="baseFeeInput" value="20000" step="1000" class="w-28 border border-slate-300 rounded-lg px-3 py-1.5 text-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+
+            <!-- Items Container -->
+            <div id="itemsContainer" class="space-y-4"></div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button onclick="addItem()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-3 px-4 rounded-xl border border-slate-300 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus text-emerald-600"></i> Add Another Item
+                </button>
+            </div>
+
+            <!-- Order Summary Footer -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200 space-y-4">
+                <h2 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar text-emerald-600"></i> Order Summary</span>
+                    <button onclick="switchTab('guide')" class="text-xs text-emerald-700 hover:underline font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-book-open"></i> Read Pricing Rules
+                    </button>
+                </h2>
+
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Subtotal Items (<span id="summaryItemCount">0</span>)</span>
+                        <span id="summaryItemsTotal" class="font-semibold">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Customer Base Fee</span>
+                        <span id="summaryBaseFee" class="font-semibold">Rp 35,000</span>
+                    </div>
+                    <div class="border-t border-slate-200 pt-3 flex justify-between items-center">
+                        <span class="text-base font-bold text-slate-800">Grand Total</span>
+                        <span id="summaryGrandTotal" class="text-2xl font-extrabold text-emerald-700">Rp 0</span>
+                    </div>
+                </div>
+
+                <button onclick="copyWhatsAppQuote()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-base">
+                    <i class="fa-brands fa-whatsapp text-xl"></i> Copy Customer Quote for WhatsApp
+                </button>
             </div>
         </div>
 
-        <!-- Items Container -->
-        <div id="itemsContainer" class="space-y-4"></div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-3">
-            <button onclick="addItem()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-3 px-4 rounded-xl border border-slate-300 transition flex items-center justify-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-plus text-emerald-600"></i> Add Another Item
-            </button>
-        </div>
-
-        <!-- Order Summary Footer -->
-        <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200 space-y-4">
-            <h2 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <i class="fa-solid fa-file-invoice-dollar text-emerald-600"></i> Order Summary
-            </h2>
-
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between text-slate-600">
-                    <span>Subtotal Items (<span id="summaryItemCount">0</span>)</span>
-                    <span id="summaryItemsTotal" class="font-semibold">Rp 0</span>
+        <!-- ================= GUIDE & RULES VIEW ================= -->
+        <div id="view-guide" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-8">
+                
+                <!-- Guide Header -->
+                <div class="border-b border-slate-100 pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold text-emerald-700 flex items-center gap-2">
+                            <span>🍁</span> Jastip Apip — Panduan Harga & Pembayaran
+                        </h1>
+                        <p class="text-xs text-slate-500 mt-1">Panduan lengkap syarat, ketentuan, dan sistem perhitungan jastip.</p>
+                    </div>
+                    <button onclick="switchTab('calculator')" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> Open Calculator
+                    </button>
                 </div>
-                <div class="flex justify-between text-slate-600">
-                    <span>Customer Base Fee</span>
-                    <span id="summaryBaseFee" class="font-semibold">Rp 20,000</span>
-                </div>
-                <div class="border-t border-slate-200 pt-3 flex justify-between items-center">
-                    <span class="text-base font-bold text-slate-800">Grand Total</span>
-                    <span id="summaryGrandTotal" class="text-2xl font-extrabold text-emerald-700">Rp 0</span>
-                </div>
+
+                <!-- Section 1 -->
+                <section class="space-y-3">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span>📊</span> 1. Sistem Fee Jastip (Sliding Scale)
+                    </h2>
+                    <p class="text-sm text-slate-600">Makin mahal harga barangnya, persentase fee-nya makin turun otomatis supaya tetap adil dan ramah di kantong!</p>
+                    <ul class="list-disc list-inside text-sm space-y-1.5 text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <li><strong>Barang di bawah 1.000 KRW:</strong> Fee awal <strong>42.5%</strong></li>
+                        <li><strong>Barang 1.000 s.d. 10.000 KRW:</strong> Fee turun halus <strong>0.25% setiap naik 100 KRW</strong></li>
+                        <li><strong>Barang 10.000 KRW ke atas:</strong> Dipatok santai di <strong>20%</strong> aja (biar barang mahal gak bikin kaget).</li>
+                    </ul>
+                </section>
+
+                <!-- Section 2 -->
+                <section class="space-y-3">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span>📦</span> 2. Kategori Ukuran & Volume Barang (Multiplier)
+                    </h2>
+                    <p class="text-sm text-slate-600">Fee dasar dari harga barang dikali lagi dengan kategori jenis barangnya:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier A (Flat / Micro):</strong> <span class="text-emerald-700 font-bold">1.0x</span><br><span class="text-xs text-slate-500">Stiker, photocard, tiket</span></div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier B (Small Accessories):</strong> <span class="text-emerald-700 font-bold">1.1x</span><br><span class="text-xs text-slate-500">Keyring, badge, masker lembaran</span></div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier C (Standard Skincare):</strong> <span class="text-emerald-700 font-bold">1.125x</span><br><span class="text-xs text-slate-500">Botol toner/serum 100ml, lip tint, pouch</span></div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier D (Albums / Bulky):</strong> <span class="text-emerald-700 font-bold">1.175x</span><br><span class="text-xs text-slate-500">Album K-Pop, buku, komik tebal</span></div>
+                        <div class="md:col-span-2 p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier E (Fragile / Heavy / Special):</strong> <span class="text-emerald-700 font-bold">1.25x</span><br><span class="text-xs text-slate-500">Botol kaca berat, edisi box khusus</span></div>
+                    </div>
+                </section>
+
+                <!-- Section 3 -->
+                <section class="space-y-3">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span>💳</span> 3. Opsi Pembayaran & Pembagian Base Fee (Total Rp35.000)
+                    </h2>
+                    <div class="space-y-3 text-sm text-slate-700">
+                        <div class="p-4 bg-emerald-50/40 rounded-xl border border-emerald-100">
+                            <strong class="text-emerald-800">Opsi 1: Full Transfer Manual (Kirim via J&T / Regular)</strong>
+                            <p class="text-xs text-slate-600 mt-1">Total belanjaan + fee jastip + <strong>Base Fee full Rp35.000</strong> ditransfer langsung sekaligus.</p>
+                        </div>
+                        <div class="p-4 bg-emerald-50/40 rounded-xl border border-emerald-100">
+                            <strong class="text-emerald-800">Opsi 2: Split Payment (Checkout via Shopee / SPX)</strong>
+                            <p class="text-xs text-slate-600 mt-1">Barang/fee utama ditransfer duluan (termasuk cicilan base fee pertama sebesar <strong>Rp20.000</strong>), lalu sisa base fee sebesar <strong>Rp15.000</strong> dibayar saat <strong>checkout lewat halaman Shopee</strong> biar bisa pakai voucher & SPX.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 4 -->
+                <section class="space-y-3">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span>📝</span> 4. Ketentuan & Kebijakan Jastip (Terms & Conditions)
+                    </h2>
+                    <ul class="list-disc list-inside text-sm space-y-2 text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <li><strong>Perhitungan Kurs:</strong> Kurs KRW ke IDR yang dipakai mengikuti nilai tukar pada saat hari pembelian barang di Korea.</li>
+                        <li><strong>Sistem Pembelian (Pay First):</strong> Orderan diproses setelah pembayaran dari customer kami terima (pay first, baru dibelikan).</li>
+                        <li><strong>Kebijakan Refund 100%:</strong> Kalau ternyata barangnya <em>out of stock</em> atau tidak berhasil didapatkan selama trip, dana direfund penuh 100% tanpa potongan.</li>
+                    </ul>
+                </section>
+
+                <!-- Section 5 -->
+                <section class="space-y-3">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span>🏦</span> 5. Info Rekening & Pembayaran
+                    </h2>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm space-y-1 text-slate-700">
+                        <p><strong>Nama Bank:</strong> [Isi Nama Bank kamu, mis. BCA / SeaBank]</p>
+                        <p><strong>Nomor Rekening:</strong> [Isi Nomor Rekening kamu]</p>
+                        <p><strong>Atas Nama:</strong> [Isi Nama Pemilik Rekening]</p>
+                    </div>
+                </section>
+
             </div>
-
-            <button onclick="copyWhatsAppQuote()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-base cursor-pointer">
-                <i class="fa-brands fa-whatsapp text-xl"></i> Copy Customer Quote for WhatsApp
-            </button>
         </div>
-    </div>
 
-    <!-- Custom Modal for Notifications instead of alert() -->
-    <div id="notificationModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl space-y-4 text-center">
-            <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto text-xl">
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <h3 id="modalTitle" class="font-bold text-lg text-slate-800">Success</h3>
-            <p id="modalMessage" class="text-sm text-slate-600"></p>
-            <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl transition cursor-pointer">OK</button>
-        </div>
     </div>
 
     <script>
-        // CONFIGURATION & DEFAULTS
-        let exchangeRate = 13.59;
-        let customerBaseFee = 20000;
-        let itemCount = 0;
+        // TAB SWITCHING LOGIC
+        function switchTab(tab) {
+            const calcView = document.getElementById('view-calculator');
+            const guideView = document.getElementById('view-guide');
+            const calcBtn = document.getElementById('tab-calculator');
+            const guideBtn = document.getElementById('tab-guide');
 
-        // Volume Tiers configuration with respective multipliers
-        const volumeTiers = [
-            { id: 'A', multiplier: 1.0, label: "Tier A: Flat / Micro (1.0x)" },
-            { id: 'B', multiplier: 1.1, label: "Tier B: Small Accessories / Makeup (1.1x)" },
-            { id: 'C', multiplier: 1.125, label: "Tier C: Standard Skincare / Small Merch (1.125x)" },
-            { id: 'D', multiplier: 1.175, label: "Tier D: Albums / Bulky Sets (1.175x)" },
-            { id: 'E', multiplier: 1.25, label: "Tier E: Special Edition / Heavy / Fragile (1.25x)" }
-        ];
-
-        function getVolumeTierObj(tierId) {
-            return volumeTiers.find(t => t.id === tierId) || volumeTiers[0];
-        }
-
-        // Sliding Scale Fee Calculation: 42.5% down to 20%
-        // Drops by 0.25% per 100 KRW increment between 1,000 KRW and 10,000 KRW
-        function calculateSlidingFeePercentage(krwPrice) {
-            if (krwPrice <= 1000) {
-                return 42.5;
-            } else if (krwPrice >= 10000) {
-                return 20.0;
+            if (tab === 'calculator') {
+                calcView.classList.remove('hidden');
+                guideView.classList.add('hidden');
+                calcBtn.className = "flex-1 py-3 px-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 bg-emerald-700 text-white shadow-sm";
+                guideBtn.className = "flex-1 py-3 px-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:bg-slate-50";
             } else {
-                // Difference from 1,000 KRW in steps of 100 KRW
-                const steps = (krwPrice - 1000) / 100;
-                const percentage = 42.5 - (steps * 0.25);
-                return Math.max(20.0, percentage);
+                calcView.classList.add('hidden');
+                guideView.classList.remove('hidden');
+                guideBtn.className = "flex-1 py-3 px-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 bg-emerald-700 text-white shadow-sm";
+                calcBtn.className = "flex-1 py-3 px-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:bg-slate-50";
             }
         }
 
-        function showModal(title, message) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalMessage').innerText = message;
-            document.getElementById('notificationModal').classList.remove('hidden');
-            document.getElementById('notificationModal').classList.add('flex');
-        }
+        // CONFIGURATION & DEFAULTS
+        let exchangeRate = 13.6;
+        let customerBaseFee = 35000;
+        let itemCount = 0;
 
-        function closeModal() {
-            document.getElementById('notificationModal').classList.remove('flex');
-            document.getElementById('notificationModal').classList.add('hidden');
+        const volumeTiers = [
+            { id: 'A', multiplier: 1.0, label: "Tier A (1.0x - Flat/Micro)" },
+            { id: 'B', multiplier: 1.1, label: "Tier B (1.1x - Small Accessories)" },
+            { id: 'C', multiplier: 1.125, label: "Tier C (1.125x - Standard Skincare)" },
+            { id: 'D', multiplier: 1.175, label: "Tier D (1.175x - Albums/Bulky/Komik)" },
+            { id: 'E', multiplier: 1.25, label: "Tier E (1.25x - Special/Heavy/Fragile)" }
+        ];
+
+        function getSlidingFeePct(krw) {
+            if (krw <= 1000) return 42.5;
+            if (krw >= 10000) return 20.0;
+            const steps = (krw - 1000) / 100;
+            return 42.5 - (steps * 0.25);
         }
 
         function addItem() {
@@ -151,11 +240,7 @@
             card.id = `item-card-${id}`;
             card.className = "bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4 relative transition hover:shadow-md";
             
-            // Generate dropdown options for volume tiers
-            let tierOptionsHtml = '';
-            volumeTiers.forEach(t => {
-                tierOptionsHtml += `<option value="${t.id}">${t.label}</option>`;
-            });
+            let tierOptionsHtml = volumeTiers.map(t => `<option value="${t.multiplier}">${t.label}</option>`).join('');
 
             card.innerHTML = `
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -163,14 +248,14 @@
                         <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center">${id}</span>
                         Item #${id}
                     </span>
-                    ${id > 1 || document.querySelectorAll('[id^="item-card-"]').length > 0 ? `<button onclick="removeItem(${id})" class="text-xs text-rose-500 hover:text-rose-700 font-semibold flex items-center gap-1 cursor-pointer"><i class="fa-solid fa-trash"></i> Remove</button>` : ''}
+                    ${id > 1 ? `<button onclick="removeItem(${id})" class="text-xs text-rose-500 hover:text-rose-700 font-semibold flex items-center gap-1"><i class="fa-solid fa-trash"></i> Remove</button>` : ''}
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Item Description / Name</label>
-                            <input type="text" id="desc-${id}" placeholder="e.g. Toner / Lipstick / Album" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <input type="text" id="desc-${id}" placeholder="e.g. Lipstick / Comic / Album" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Price in Korean Won (KRW)</label>
@@ -181,15 +266,15 @@
                         </div>
                     </div>
 
-                    <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col justify-center">
+                    <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Volume Category (Tier A - E)</label>
-                            <select id="tier-${id}" onchange="calculateOrder()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Volume Tier Category</label>
+                            <select id="tier-${id}" onchange="calculateOrder()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                                 ${tierOptionsHtml}
                             </select>
                         </div>
-                        <div class="text-xs text-slate-500 mt-1">
-                            <span id="tierInfo-${id}">Select tier to view multiplier & fee breakdown</span>
+                        <div class="text-xs text-slate-500 pt-2">
+                            <p id="feeDetail-${id}" class="font-medium text-slate-600">Sliding Fee: -</p>
                         </div>
                     </div>
                 </div>
@@ -197,7 +282,6 @@
                 <div class="bg-emerald-50/60 rounded-xl p-3 border border-emerald-100 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div class="space-y-0.5">
                         <span id="badge-${id}" class="inline-block bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded font-bold">Fee %: -</span>
-                        <p id="feeKrwText-${id}" class="text-slate-500">Jastip Fee: ₩0</p>
                     </div>
                     <div class="text-right">
                         <span class="text-slate-500 block">Item Total (IDR)</span>
@@ -217,7 +301,7 @@
         }
 
         function calculateOrder() {
-            exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 13.59;
+            exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 13.6;
             customerBaseFee = parseFloat(document.getElementById('baseFeeInput').value) || 0;
 
             let itemsGrandTotal = 0;
@@ -226,29 +310,18 @@
             itemCards.forEach(card => {
                 const id = card.id.replace('item-card-', '');
                 const krw = parseFloat(document.getElementById(`krw-${id}`).value) || 0;
-                const tierId = document.getElementById(`tier-${id}`).value;
-                const tierObj = getVolumeTierObj(tierId);
+                const tierMultiplier = parseFloat(document.getElementById(`tier-${id}`).value) || 1.0;
 
-                // Calculate sliding percentage based on price
-                const feePercentage = calculateSlidingFeePercentage(krw);
-                
-                // Base fee amount in KRW = Price * (Fee % / 100)
-                const baseFeeKRW = krw * (feePercentage / 100);
-                
-                // Final jastip fee in KRW = Base fee * Volume Tier Multiplier
-                const finalFeeKRW = baseFeeKRW * tierObj.multiplier;
-                
-                // Total item price in KRW = Item Price + Final Jastip Fee
-                const totalItemKRW = krw + finalFeeKRW;
-                
-                // Convert to IDR
-                const itemTotalIDR = Math.round(totalItemKRW * exchangeRate);
+                const feePct = getSlidingFeePct(krw);
+                const baseFeeKRW = krw * (feePct / 100.0);
+                const finalItemFeeKRW = Math.round(baseFeeKRW * tierMultiplier);
+                const finalItemKRW = krw + finalItemFeeKRW;
+                const itemTotalIDR = Math.round(finalItemKRW * exchangeRate);
+
                 itemsGrandTotal += itemTotalIDR;
 
-                // Update UI badge & info
-                document.getElementById(`badge-${id}`).innerText = `Fee Rate: ${feePercentage.toFixed(2)}%`;
-                document.getElementById(`tierInfo-${id}`).innerText = `Multiplier: ${tierObj.multiplier}x applied to fee`;
-                document.getElementById(`feeKrwText-${id}`).innerText = `Jastip Fee: ₩${Math.round(finalFeeKRW).toLocaleString('en-US')} (${tierObj.id} tier)`;
+                document.getElementById(`badge-${id}`).innerText = `Fee Pct: ${feePct.toFixed(2)}%`;
+                document.getElementById(`feeDetail-${id}`).innerText = `Fee: ₩${finalItemFeeKRW.toLocaleString('en-US')} (~${feePct.toFixed(2)}% + multiplier)`;
                 document.getElementById(`itemTotal-${id}`).innerText = `Rp ${itemTotalIDR.toLocaleString('id-ID')}`;
             });
 
@@ -262,39 +335,37 @@
             const itemCards = document.querySelectorAll('[id^="item-card-"]');
             let itemsText = "";
             let grandTotal = customerBaseFee;
-            let itemsGrandTotal = 0;
 
             itemCards.forEach((card, index) => {
                 const id = card.id.replace('item-card-', '');
                 const desc = document.getElementById(`desc-${id}`).value || `Item ${index + 1}`;
                 const krw = parseFloat(document.getElementById(`krw-${id}`).value) || 0;
-                const tierId = document.getElementById(`tier-${id}`).value;
-                const tierObj = getVolumeTierObj(tierId);
+                const tierMultiplier = parseFloat(document.getElementById(`tier-${id}`).value) || 1.0;
+                const selectElement = document.getElementById(`tier-${id}`);
+                const tierLabel = selectElement.options[selectElement.selectedIndex].text;
 
-                const feePercentage = calculateSlidingFeePercentage(krw);
-                const baseFeeKRW = krw * (feePercentage / 100);
-                const finalFeeKRW = baseFeeKRW * tierObj.multiplier;
-                const totalItemKRW = krw + finalFeeKRW;
-                const totalIDR = Math.round(totalItemKRW * exchangeRate);
-                itemsGrandTotal += totalIDR;
-                grandTotal = itemsGrandTotal + customerBaseFee;
+                const feePct = getSlidingFeePct(krw);
+                const baseFeeKRW = krw * (feePct / 100.0);
+                const finalItemFeeKRW = Math.round(baseFeeKRW * tierMultiplier);
+                const finalItemKRW = krw + finalItemFeeKRW;
+                const totalIDR = Math.round(finalItemKRW * exchangeRate);
+                grandTotal += totalIDR;
 
-                itemsText += `${index + 1}. *${desc}*\n   • Price: ₩${krw.toLocaleString('en-US')}\n   • Volume Tier: ${tierObj.id} (${tierObj.multiplier}x)\n   • Total Price: Rp ${totalIDR.toLocaleString('id-ID')}\n\n`;
+                itemsText += `${index + 1}. *${desc}*\n   • Price: ₩${krw.toLocaleString('en-US')}\n   • Kategori: ${tierLabel}\n   • Total: Rp ${totalIDR.toLocaleString('id-ID')}\n\n`;
             });
 
-            const quote = `🛍️ *JASTIP KOREA QUOTATION*\n-----------------------------------\n${itemsText}📌 *Customer Base Fee:* Rp ${customerBaseFee.toLocaleString('id-ID')}\n-----------------------------------\n💰 *GRAND TOTAL:* Rp ${grandTotal.toLocaleString('id-ID')}\n\n_Note: Calculated with sliding-scale fee & volume multipliers._`;
+            const quote = `🛍️ *JASTIP KOREA APIP*\n-----------------------------------\n${itemsText}📌 *Base Fee:* Rp ${customerBaseFee.toLocaleString('id-ID')} _(Rp 20k manual + Rp 15k Shopee/SPX)_\n-----------------------------------\n💰 *GRAND TOTAL:* Rp ${grandTotal.toLocaleString('id-ID')}\n\n_Note: Kurs & perhitungan mengikuti ketentuan Jastip Apip._`;
 
             navigator.clipboard.writeText(quote).then(() => {
-                showModal("Copied!", "WhatsApp quote copied to clipboard successfully!");
+                alert("WhatsApp quote copied to clipboard!");
             });
         }
 
         document.getElementById('exchangeRateInput').addEventListener('input', calculateOrder);
         document.getElementById('baseFeeInput').addEventListener('input', calculateOrder);
 
-        // Add first item by default on load
+        // Add first item by default
         addItem();
     </script>
 </body>
 </html>
-```
