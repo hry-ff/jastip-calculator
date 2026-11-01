@@ -179,9 +179,9 @@
                         <span>🏦</span> 5. Info Rekening & Pembayaran
                     </h2>
                     <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm space-y-1 text-slate-700">
-                        <p><strong>Nama Bank:</strong> [Isi Nama Bank kamu, mis. BCA / SeaBank]</p>
-                        <p><strong>Nomor Rekening:</strong> [Isi Nomor Rekening kamu]</p>
-                        <p><strong>Atas Nama:</strong> [Isi Nama Pemilik Rekening]</p>
+                        <p><strong>Nama Bank:</strong> BCA </p>
+                        <p><strong>Nomor Rekening:</strong> 8030701420</p>
+                        <p><strong>Atas Nama:</strong> Huriyatul Afifah</p>
                     </div>
                 </section>
 
@@ -302,70 +302,3 @@
 
         function calculateOrder() {
             exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 13.6;
-            customerBaseFee = parseFloat(document.getElementById('baseFeeInput').value) || 0;
-
-            let itemsGrandTotal = 0;
-            const itemCards = document.querySelectorAll('[id^="item-card-"]');
-
-            itemCards.forEach(card => {
-                const id = card.id.replace('item-card-', '');
-                const krw = parseFloat(document.getElementById(`krw-${id}`).value) || 0;
-                const tierMultiplier = parseFloat(document.getElementById(`tier-${id}`).value) || 1.0;
-
-                const feePct = getSlidingFeePct(krw);
-                const baseFeeKRW = krw * (feePct / 100.0);
-                const finalItemFeeKRW = Math.round(baseFeeKRW * tierMultiplier);
-                const finalItemKRW = krw + finalItemFeeKRW;
-                const itemTotalIDR = Math.round(finalItemKRW * exchangeRate);
-
-                itemsGrandTotal += itemTotalIDR;
-
-                document.getElementById(`badge-${id}`).innerText = `Fee Pct: ${feePct.toFixed(2)}%`;
-                document.getElementById(`feeDetail-${id}`).innerText = `Fee: ₩${finalItemFeeKRW.toLocaleString('en-US')} (~${feePct.toFixed(2)}% + multiplier)`;
-                document.getElementById(`itemTotal-${id}`).innerText = `Rp ${itemTotalIDR.toLocaleString('id-ID')}`;
-            });
-
-            document.getElementById('summaryItemCount').innerText = itemCards.length;
-            document.getElementById('summaryItemsTotal').innerText = `Rp ${itemsGrandTotal.toLocaleString('id-ID')}`;
-            document.getElementById('summaryBaseFee').innerText = `Rp ${customerBaseFee.toLocaleString('id-ID')}`;
-            document.getElementById('summaryGrandTotal').innerText = `Rp ${(itemsGrandTotal + customerBaseFee).toLocaleString('id-ID')}`;
-        }
-
-        function copyWhatsAppQuote() {
-            const itemCards = document.querySelectorAll('[id^="item-card-"]');
-            let itemsText = "";
-            let grandTotal = customerBaseFee;
-
-            itemCards.forEach((card, index) => {
-                const id = card.id.replace('item-card-', '');
-                const desc = document.getElementById(`desc-${id}`).value || `Item ${index + 1}`;
-                const krw = parseFloat(document.getElementById(`krw-${id}`).value) || 0;
-                const tierMultiplier = parseFloat(document.getElementById(`tier-${id}`).value) || 1.0;
-                const selectElement = document.getElementById(`tier-${id}`);
-                const tierLabel = selectElement.options[selectElement.selectedIndex].text;
-
-                const feePct = getSlidingFeePct(krw);
-                const baseFeeKRW = krw * (feePct / 100.0);
-                const finalItemFeeKRW = Math.round(baseFeeKRW * tierMultiplier);
-                const finalItemKRW = krw + finalItemFeeKRW;
-                const totalIDR = Math.round(finalItemKRW * exchangeRate);
-                grandTotal += totalIDR;
-
-                itemsText += `${index + 1}. *${desc}*\n   • Price: ₩${krw.toLocaleString('en-US')}\n   • Kategori: ${tierLabel}\n   • Total: Rp ${totalIDR.toLocaleString('id-ID')}\n\n`;
-            });
-
-            const quote = `🛍️ *JASTIP KOREA APIP*\n-----------------------------------\n${itemsText}📌 *Base Fee:* Rp ${customerBaseFee.toLocaleString('id-ID')} _(Rp 20k manual + Rp 15k Shopee/SPX)_\n-----------------------------------\n💰 *GRAND TOTAL:* Rp ${grandTotal.toLocaleString('id-ID')}\n\n_Note: Kurs & perhitungan mengikuti ketentuan Jastip Apip._`;
-
-            navigator.clipboard.writeText(quote).then(() => {
-                alert("WhatsApp quote copied to clipboard!");
-            });
-        }
-
-        document.getElementById('exchangeRateInput').addEventListener('input', calculateOrder);
-        document.getElementById('baseFeeInput').addEventListener('input', calculateOrder);
-
-        // Add first item by default
-        addItem();
-    </script>
-</body>
-</html>
