@@ -134,13 +134,13 @@
                     <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         <span>📦</span> 2. Kategori Ukuran & Volume Barang (Multiplier)
                     </h2>
-                    <p class="text-sm text-slate-600">Fee dasar dari harga barang dikali lagi dengan kategori jenis barangnya:</p>
+                    <p class="text-sm text-slate-600">Formula perkalian: <em>Price × (1 + Fee%) × Exchange Rate × Multiplier</em></p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier A (Flat / Micro):</strong> <span class="text-emerald-700 font-bold">1.0x</span><br><span class="text-xs text-slate-500">Stiker, photocard, tiket</span></div>
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier B (Small Accessories):</strong> <span class="text-emerald-700 font-bold">1.1x</span><br><span class="text-xs text-slate-500">Keyring, badge, masker lembaran</span></div>
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier C (Standard Skincare):</strong> <span class="text-emerald-700 font-bold">1.125x</span><br><span class="text-xs text-slate-500">Botol toner/serum 100ml, lip tint, pouch</span></div>
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier D (Albums / Bulky):</strong> <span class="text-emerald-700 font-bold">1.175x</span><br><span class="text-xs text-slate-500">Album K-Pop, buku, komik tebal</span></div>
-                        <div class="md:col-span-2 p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier E (Fragile / Heavy / Special):</strong> <span class="text-emerald-700 font-bold">1.25x</span><br><span class="text-xs text-slate-500">Botol kaca berat, edisi box khusus</span></div>
+                        <div class="md:col-span-2 p-3 bg-slate-50 rounded-xl border border-slate-200"><strong>Tier E (Fragile / Heavy / Special):</strong> <span class="text-emerald-700 font-bold">1.25x</span><br><span class="text-xs text-slate-500">Botol kaca berat, lightstick, edisi box khusus</span></div>
                     </div>
                 </section>
 
@@ -179,9 +179,9 @@
                         <span>🏦</span> 5. Info Rekening & Pembayaran
                     </h2>
                     <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm space-y-1 text-slate-700">
-                        <p><strong>Nama Bank:</strong> BCA</p>
-                        <p><strong>Nomor Rekening:</strong> 8030701420</p>
-                        <p><strong>Atas Nama:</strong> Huriyatul Afifah</p>
+                        <p><strong>Nama Bank:</strong> [Isi Nama Bank kamu, mis. BCA / SeaBank]</p>
+                        <p><strong>Nomor Rekening:</strong> [Isi Nomor Rekening kamu]</p>
+                        <p><strong>Atas Nama:</strong> [Isi Nama Pemilik Rekening]</p>
                     </div>
                 </section>
 
@@ -221,7 +221,7 @@
             { id: 'B', multiplier: 1.1, label: "Tier B (1.1x - Small Accessories)" },
             { id: 'C', multiplier: 1.125, label: "Tier C (1.125x - Standard Skincare)" },
             { id: 'D', multiplier: 1.175, label: "Tier D (1.175x - Albums/Bulky/Komik)" },
-            { id: 'E', multiplier: 1.25, label: "Tier E (1.25x - Special/Heavy/Fragile)" }
+            { id: 'E', multiplier: 1.25, label: "Tier E (1.25x - Special/Heavy/Lightstick)" }
         ];
 
         function getSlidingFeePct(krw) {
@@ -255,7 +255,7 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Item Description / Name</label>
-                            <input type="text" id="desc-${id}" placeholder="e.g. Lipstick / Comic / Album" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <input type="text" id="desc-${id}" placeholder="e.g. Lightstick / Album / Comic" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Price in Korean Won (KRW)</label>
@@ -312,16 +312,16 @@
                 const krw = parseFloat(document.getElementById(`krw-${id}`).value) || 0;
                 const tierMultiplier = parseFloat(document.getElementById(`tier-${id}`).value) || 1.0;
 
-                const feePct = getSlidingFeePct(krw);
-                const baseFeeKRW = krw * (feePct / 100.0);
-                const finalItemFeeKRW = Math.round(baseFeeKRW * tierMultiplier);
-                const finalItemKRW = krw + finalItemFeeKRW;
-                const itemTotalIDR = Math.round(finalItemKRW * exchangeRate);
+                const feePct = getSlidingFeePct(krw); // e.g. 20.0
+                const feeMultiplierFactor = 1 + (feePct / 100.0); // e.g. 1.20
+
+                // Formula: KRW × (1 + Fee%) × ExchangeRate × TierMultiplier
+                const itemTotalIDR = Math.round(krw * feeMultiplierFactor * exchangeRate * tierMultiplier);
 
                 itemsGrandTotal += itemTotalIDR;
 
                 document.getElementById(`badge-${id}`).innerText = `Fee Pct: ${feePct.toFixed(2)}%`;
-                document.getElementById(`feeDetail-${id}`).innerText = `Fee: ₩${finalItemFeeKRW.toLocaleString('en-US')} (~${feePct.toFixed(2)}% + multiplier)`;
+                document.getElementById(`feeDetail-${id}`).innerText = `Applied Fee: ${feePct.toFixed(2)}% + Tier Multiplier`;
                 document.getElementById(`itemTotal-${id}`).innerText = `Rp ${itemTotalIDR.toLocaleString('id-ID')}`;
             });
 
@@ -340,15 +340,14 @@
                 const id = card.id.replace('item-card-', '');
                 const desc = document.getElementById(`desc-${id}`).value || `Item ${index + 1}`;
                 const krw = parseFloat(document.getElementById(`krw-${id}`).value) || 0;
-                const tierMultiplier = parseFloat(document.getElementById(`tier-${id}`).value) || 1.0;
                 const selectElement = document.getElementById(`tier-${id}`);
                 const tierLabel = selectElement.options[selectElement.selectedIndex].text;
 
                 const feePct = getSlidingFeePct(krw);
-                const baseFeeKRW = krw * (feePct / 100.0);
-                const finalItemFeeKRW = Math.round(baseFeeKRW * tierMultiplier);
-                const finalItemKRW = krw + finalItemFeeKRW;
-                const totalIDR = Math.round(finalItemKRW * exchangeRate);
+                const feeMultiplierFactor = 1 + (feePct / 100.0);
+                const tierMultiplier = parseFloat(selectElement.value) || 1.0;
+
+                const totalIDR = Math.round(krw * feeMultiplierFactor * exchangeRate * tierMultiplier);
                 grandTotal += totalIDR;
 
                 itemsText += `${index + 1}. *${desc}*\n   • Price: ₩${krw.toLocaleString('en-US')}\n   • Kategori: ${tierLabel}\n   • Total: Rp ${totalIDR.toLocaleString('id-ID')}\n\n`;
